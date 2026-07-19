@@ -29,23 +29,39 @@ from kaggle_environments import make
 
 def build_ppo_agent(model_path):
     """
-    加载 SB3 PPO 模型，包装为 Kaggle 兼容的 agent 函数
-
-    PPO 模型接受扁平棋盘 (42,) float32 -> int action
-    Kaggle agent 接口： (obs, config) -> int action
-    这里做适配转换。
+    加载 MaskablePPO 模型，包装为 Kaggle ConnectX agent。
     """
-    from stable_baselines3 import PPO
-    model = PPO.load(model_path)
+
+    from sb3_contrib import MaskablePPO
+
+    model = MaskablePPO.load(model_path)
 
     def ppo_agent(obs, config):
-        # 将 Kaggle obs.board (list[int]) 转为 SB3 需要的 numpy 格式
-        board = np.array(obs.board, dtype=np.float32)
-        action, _ = model.predict(board, deterministic=True)
+        board = np.asarray(obs.board, dtype=np.float32)
+
+        # 训练环境采用相对棋盘表示。
+        my_mark = obs.mark
+        opp_mark = 3 - my_mark
+
+        state = np.zeros_like(board, dtype=np.float32)
+        state[board == my_mark] = 1.0
+        state[board == opp_mark] = -1.0
+
+        # 第一行非零代表该列已满。
+        action_masks = np.asarray(
+            [board[col] == 0 for col in range(config.columns)],
+            dtype=bool,
+        )
+
+        action, _ = model.predict(
+            state,
+            deterministic=True,
+            action_masks=action_masks,
+        )
+
         return int(action)
 
     return ppo_agent
-
 
 def resolve_agent(spec):
     """

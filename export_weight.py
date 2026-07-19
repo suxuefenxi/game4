@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from stable_baselines3 import PPO
+from sb3_contrib import MaskablePPO
 
 # 1. 声明一个与 SB3 默认 PPO Actor 完全一致的纯 PyTorch 模型结构
 class PurePyTorchPolicy(nn.Module):
@@ -21,7 +21,7 @@ class PurePyTorchPolicy(nn.Module):
         return self.action_net(x)
 
 # 2. 加载训练好的 SB3 模型并转换权重
-sb3_model = PPO.load("ppo_connectx")
+sb3_model = MaskablePPO.load("ppo_connectx_v1_masked")
 sb3_policy = sb3_model.policy
 
 # 3. 映射权重数据
