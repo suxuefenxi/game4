@@ -78,14 +78,14 @@ if __name__ == "__main__":
         gamma=0.99,
     )
 
-    print("开始训练 V1：relative state + action masking ...")
+    print("开始训练 V2：random first/second + sparse terminal reward ...")
 
     model.learn(
         total_timesteps=1_000_000,
         progress_bar=False,
     )
 
-    model.save("ppo_connectx_v1_masked")
+    model.save("ppo_connectx_v2_twosided")
     env.close()
 
-    print("训练完成：ppo_connectx_v1_masked.zip")
+    print("训练完成：ppo_connectx_v2_masked.zip")
