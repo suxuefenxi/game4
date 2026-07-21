@@ -3,6 +3,8 @@ from gymnasium import spaces
 import numpy as np
 from kaggle_environments import make
 
+from tactical import tactical_action_mask
+
 
 class ConnectFourGym(gym.Env):
     """
@@ -86,19 +88,23 @@ class ConnectFourGym(gym.Env):
 
     def action_masks(self):
         """
-        返回合法动作掩码。
+        V3：合法性 + 基础战术动作 mask。
 
-        True：该列未满，可以下。
-        False：该列已满，MaskablePPO 不允许选择。
+        True：
+            该动作可以由策略选择。
+        False：
+            已满列，或该动作会在存在安全走法时让对手下一手直接获胜。
         """
         if self.obs is None:
             return np.ones(self.columns, dtype=bool)
 
         board = self._get_value(self.obs, "board")
+        my_mark = self._get_value(self.obs, "mark")
 
-        return np.asarray(
-            [board[col] == 0 for col in range(self.columns)],
-            dtype=bool,
+        return tactical_action_mask(
+            board=board,
+            mark=my_mark,
+            config=self.ks_env.configuration,
         )
 
     def reset(self, seed=None, options=None):

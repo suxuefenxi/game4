@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+from tactical import tactical_action_mask
+
 # 1. 声明完全一致的模型结构
 class PurePyTorchPolicy(nn.Module):
     def __init__(self):
@@ -53,10 +55,15 @@ def agent(observation, configuration):
     with torch.no_grad():
         logits = model(state_tensor).squeeze(0)
         
-    # 动作屏蔽（Action Masking）：如果该列第一行不为 0，说明已满
+    action_mask = tactical_action_mask(
+        board=board_list,
+        mark=my_mark,
+        config=configuration,
+    )
+
     for col in range(configuration.columns):
-        if board_list[col] != 0:
-            logits[col] = -float('inf') # 设为负无穷防止被选中
+        if not action_mask[col]:
+            logits[col] = -float("inf")
             
     # 选择概率（或Logits）最大的合法列
     action = int(torch.argmax(logits).item())

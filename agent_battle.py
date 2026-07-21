@@ -28,18 +28,15 @@ from kaggle_environments import make
 
 
 def build_ppo_agent(model_path):
-    """
-    加载 MaskablePPO 模型，包装为 Kaggle ConnectX agent。
-    """
-
     from sb3_contrib import MaskablePPO
+    from tactical import tactical_action_mask
 
     model = MaskablePPO.load(model_path)
 
     def ppo_agent(obs, config):
         board = np.asarray(obs.board, dtype=np.float32)
 
-        # 训练环境采用相对棋盘表示。
+        # 与训练环境完全一致：当前行动方视角的相对编码。
         my_mark = obs.mark
         opp_mark = 3 - my_mark
 
@@ -47,10 +44,11 @@ def build_ppo_agent(model_path):
         state[board == my_mark] = 1.0
         state[board == opp_mark] = -1.0
 
-        # 第一行非零代表该列已满。
-        action_masks = np.asarray(
-            [board[col] == 0 for col in range(config.columns)],
-            dtype=bool,
+        # 与训练完全一致的战术 mask。
+        action_masks = tactical_action_mask(
+            board=board,
+            mark=my_mark,
+            config=config,
         )
 
         action, _ = model.predict(
