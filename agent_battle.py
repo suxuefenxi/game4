@@ -8,6 +8,8 @@ Agent 对战测试脚手架
 支持的 agent 类型：
   random      - Kaggle 内置随机 AI
   heuristic   - 一阶启发式 AI（heuristic_agent.py）
+  minimax_d3  - Minimax depth=3 agent
+  minimax_d4  - Minimax depth=4 agent
   <模型路径>  - SB3 训练好的 PPO 模型文件（例如 ppo_connectx.zip）
 
 用法示例：
@@ -77,6 +79,22 @@ def resolve_agent(spec):
     if spec == "heuristic":
         from heuristic_agent import heuristic_agent
         return heuristic_agent
+    
+    if spec == "minimax_d3":
+        from minimax_agent import minimax_d3_agent
+        return minimax_d3_agent
+
+    if spec == "minimax_d4":
+        from minimax_agent import minimax_d4_agent
+        return minimax_d4_agent
+
+    if spec == "minimax_d3_fixed":
+        from minimax_agent import minimax_d3_deterministic
+        return minimax_d3_deterministic
+
+    if spec == "minimax_d4_fixed":
+        from minimax_agent import minimax_d4_deterministic
+        return minimax_d4_deterministic
 
     # SB3 模型文件（路径以 .zip 结尾）
     if spec.endswith(".zip"):
