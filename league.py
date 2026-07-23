@@ -40,7 +40,7 @@ def make_maskable_ppo_agent(model_path):
 
         action, _ = model.predict(
             state,
-            deterministic=True,
+            deterministic=False,   # 训练对手加随机性，增加局面多样性
             action_masks=action_mask,
         )
         return int(action)
