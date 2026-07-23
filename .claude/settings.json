@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python agent_battle.py heuristic random -n 6 -v)",
+      "Bash(python3 -c \"import sys; print\\(sys.executable\\)\")",
+      "Bash(python3 -c \"import re; print\\(re.search\\(r'\\(\\\\d+\\)\\\\s*胜\\\\s*\\(\\\\d+\\)\\\\s*平\\\\s*\\(\\\\d+\\)\\\\s*负', '  gen_000_v4_best.zip :   12 胜   2 平   6 负'\\).groups\\(\\)\\)\")"
+    ]
+  }
+}

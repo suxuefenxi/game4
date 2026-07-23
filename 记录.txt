@@ -1,0 +1,12 @@
+最后记得：
+tar -czf submission.tar.gz main.py pure_policy_weights_v2_twosided.pth
+tar -czf submission.tar.gz main.py tactical.py  pure_policy_weights_v4.pth
+tensorboard --logdir .\runs\gen_002\tensorboard\
+
+v1是跟random比50万步，跟heuristic平手（靠先手），基本碾压random
+v2是跟heuristic比100万步，能赢v1，或者打平，勉强赢random，但是完全输给heuristic，并且训练分数不稳定，因为heuristic基本是写死的，没有多少随机性，比较死板
+v3是跟heuristic+random各50%比，跟heuristic平手，跟v1比被打败，不行。
+========gpt lesson============
+v1是用了mask动作禁区，解决状态不一致（1表示自己，-1对手，0表示空）
+v2是去掉1/42奖励，有随机先后手,打败v1，打败random，打败heuristic
+v3v4，添加tactical必胜必输动作，v4大改PPO参数，两百万steps训练很久，完胜其他策略，基本赢得了minmaxd3，基本输给d4，但是这两个是死规则。
