@@ -305,24 +305,30 @@ def make_minimax_agent(depth=3, time_limit=0.8, seed=None):
 # 供 agent_battle.py / train.py 直接导入的固定难度版本。
 minimax_d3_agent = make_minimax_agent(
     depth=3,
-    time_limit=0.5,
+    time_limit=0.2,
     seed=None,
 )
 
 minimax_d4_agent = make_minimax_agent(
     depth=4,
-    time_limit=1.0,
+    time_limit=0.4,
+    seed=None,
+)
+
+minimax_d5_agent = make_minimax_agent(
+    depth=5,
+    time_limit=0.8,
     seed=None,
 )
 
 minimax_d3_deterministic = make_minimax_agent(
     depth=3,
-    time_limit=0.5,
+    time_limit=0.2,
     seed=42,
 )
 
 minimax_d4_deterministic = make_minimax_agent(
     depth=4,
-    time_limit=1.0,
+    time_limit=0.4,
     seed=42,
 )

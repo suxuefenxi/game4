@@ -19,7 +19,7 @@ class ConnectFourGym(gym.Env):
 
     metadata = {"render_modes": []}
 
-    def __init__(self, agent2="random"):
+    def __init__(self, opponent_selector=None):
         super().__init__()
 
         # 保留一个 Kaggle 原生环境实例。
@@ -28,7 +28,11 @@ class ConnectFourGym(gym.Env):
         self.rows = self.ks_env.configuration.rows
         self.columns = self.ks_env.configuration.columns
 
-        self.opponent = agent2
+        # opponent_selector(rng) -> (agent, opponent_name)
+        # 如果没传入，则始终使用 random。
+        self.opponent_selector = opponent_selector
+        self.current_opponent = "random"
+        self.current_opponent_name = "random"
         self.env = None
         self.obs = None
 
@@ -52,20 +56,17 @@ class ConnectFourGym(gym.Env):
         return getattr(obs, key) if hasattr(obs, key) else obs[key]
 
     def _make_trainer(self):
-        """
-        为新对局创建 trainer。
-
-        Kaggle train([...]) 中：
-        - None 所在的位置就是由 Gym/RL 控制的训练 agent。
-        - index=0 对应先手（mark=1）
-        - index=1 对应后手（mark=2）
-        """
+        """按本局先后手创建 Kaggle trainer。"""
         if self.is_first_player:
-            # 训练 agent 执先手
-            self.env = self.ks_env.train([None, self.opponent])
+            self.env = self.ks_env.train([
+                None,
+                self.current_opponent,
+            ])
         else:
-            # 对手先走，训练 agent 执后手
-            self.env = self.ks_env.train([self.opponent, None])
+            self.env = self.ks_env.train([
+                self.current_opponent,
+                None,
+            ])
 
     def _relative_board(self, obs):
         """
@@ -110,16 +111,23 @@ class ConnectFourGym(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        # 每局随机切换先手/后手。
-        # self.np_random 是 Gymnasium 管理的随机数生成器，
-        # 因此传入 seed 时可复现。
+        # 1. 每局随机决定训练 agent 的先后手。
         self.is_first_player = bool(self.np_random.integers(0, 2))
 
-        # 根据先后手重新建立 Kaggle trainer。
+        # 2. 每局只抽取一次对手，整局保持不变。
+        if self.opponent_selector is None:
+            self.current_opponent = "random"
+            self.current_opponent_name = "random"
+        else:
+            self.current_opponent, self.current_opponent_name = (
+                self.opponent_selector(self.np_random)
+            )
+
+        # 3. 用当前对手创建这一局的 trainer。
         self._make_trainer()
 
-        # 如果训练 agent 是后手，Kaggle trainer 会先执行对手首步，
-        # 然后把轮到训练 agent 行动时的 obs 返回给我们。
+        # 若训练者是后手，Kaggle 会先让对手走一步，
+        # 再返回轮到训练者行动时的观测。
         self.obs = self.env.reset()
 
         board = self._relative_board(self.obs)
@@ -128,8 +136,8 @@ class ConnectFourGym(gym.Env):
             "action_mask": self.action_masks(),
             "is_first_player": self.is_first_player,
             "agent_mark": self._get_value(self.obs, "mark"),
+            "opponent_name": self.current_opponent_name,
         }
-
         return board, info
 
     def step(self, action):
@@ -157,6 +165,7 @@ class ConnectFourGym(gym.Env):
         info = {
             "action_mask": self.action_masks(),
             "is_first_player": self.is_first_player,
+            "opponent_name": self.current_opponent_name,
         }
 
         return board, reward, terminated, truncated, info

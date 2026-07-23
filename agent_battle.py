@@ -10,6 +10,7 @@ Agent 对战测试脚手架
   heuristic   - 一阶启发式 AI（heuristic_agent.py）
   minimax_d3  - Minimax depth=3 agent
   minimax_d4  - Minimax depth=4 agent
+  minimax_d5  - Minimax depth=5 agent
   <模型路径>  - SB3 训练好的 PPO 模型文件（例如 ppo_connectx.zip）
 
 用法示例：
@@ -29,7 +30,7 @@ import numpy as np
 from kaggle_environments import make
 
 
-def build_ppo_agent(model_path):
+def build_ppo_agent(model_path, stochastic=False):
     from sb3_contrib import MaskablePPO
     from tactical import tactical_action_mask
 
@@ -53,9 +54,11 @@ def build_ppo_agent(model_path):
             config=config,
         )
 
+        # 默认保持确定性，便于做基准；
+        # 若开启 stochastic，则让 PPO 按策略分布采样，产生更有多样性的对局。
         action, _ = model.predict(
             state,
-            deterministic=True,
+            deterministic=not stochastic,
             action_masks=action_masks,
         )
 
@@ -63,7 +66,7 @@ def build_ppo_agent(model_path):
 
     return ppo_agent
 
-def resolve_agent(spec):
+def resolve_agent(spec, stochastic=False):
     """
     将 agent 规格字符串解析为可调用对象
 
@@ -87,6 +90,10 @@ def resolve_agent(spec):
     if spec == "minimax_d4":
         from minimax_agent import minimax_d4_agent
         return minimax_d4_agent
+    
+    if spec == "minimax_d5":
+        from minimax_agent import minimax_d5_agent
+        return minimax_d5_agent
 
     if spec == "minimax_d3_fixed":
         from minimax_agent import minimax_d3_deterministic
@@ -98,7 +105,7 @@ def resolve_agent(spec):
 
     # SB3 模型文件（路径以 .zip 结尾）
     if spec.endswith(".zip"):
-        return build_ppo_agent(spec)
+        return build_ppo_agent(spec, stochastic=stochastic)
 
     # 其他情况：当作 Kaggle 内置 agent 名称字符串
     return spec
@@ -143,11 +150,13 @@ def main():
                         help="比赛总局数（默认 10，会自动轮换先手）")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="显示每局详细结果")
+    parser.add_argument("--stochastic", action="store_true",
+                        help="对 PPO agent 使用采样模式（非 deterministic），增加对局多样性")
     args = parser.parse_args()
 
     # 注册 agent
-    a1 = resolve_agent(args.agent1)
-    a2 = resolve_agent(args.agent2)
+    a1 = resolve_agent(args.agent1, stochastic=args.stochastic)
+    a2 = resolve_agent(args.agent2, stochastic=args.stochastic)
 
     # 显示对战信息
     print(f"{'='*50}")
