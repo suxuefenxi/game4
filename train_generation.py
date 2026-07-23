@@ -26,6 +26,7 @@ from sb3_contrib.common.maskable.callbacks import MaskableEvalCallback
 from connect_four_gym import ConnectFourGym
 from heuristic_agent import heuristic_agent
 from minimax_agent import make_minimax_agent
+from bc_policy import load_bc_agent
 from league import (
     make_maskable_ppo_agent,
     build_opponent_selector,
@@ -48,22 +49,26 @@ _minimax_d3_fast = make_minimax_agent(depth=3, time_limit=0.05)
 _minimax_d4_fast = make_minimax_agent(depth=4, time_limit=0.10)
 _minimax_d5_fast = make_minimax_agent(depth=5, time_limit=0.25)
 
+# 行为克隆策略，从专家数据模仿训练，作为固定对手之一。
+_bc_agent = load_bc_agent("runs/bc_v1/bc_policy_best.pt")
+
 
 def make_league_selector(league_dir):
     """
     构建训练环境的对手池。
 
-    - 固定对手占 65%（random / heuristic / minimax_d3_fast）
-    - 历史晋升模型占 35%（按权重均分）
+    - 固定对手：random(5%) / heuristic(5%) / d3(40%) / d4(35%) / d5(5%) / bc_v1(10%)
+    - 历史晋升模型补足至 100%（按权重均分）
     """
     league_dir = Path(league_dir)
 
     specs = [
         ("random", _random_agent, 0.05),
         ("heuristic", heuristic_agent, 0.05),
-        ("minimax_d3_fast", _minimax_d3_fast, 0.40),
+        ("minimax_d3_fast", _minimax_d3_fast, 0.15),
         ("minimax_d4_fast", _minimax_d4_fast, 0.40),
         ("minimax_d5_fast", _minimax_d5_fast, 0.10),
+        ("bc_v1", _bc_agent, 0.15),
     ]
 
     history_paths = find_league_models(league_dir, max_models=3)

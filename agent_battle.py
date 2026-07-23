@@ -107,6 +107,10 @@ def resolve_agent(spec, stochastic=False):
     if spec.endswith(".zip"):
         return build_ppo_agent(spec, stochastic=stochastic)
 
+    if spec.endswith(".pt") or spec.endswith(".pth"):
+        from bc_policy import load_bc_agent
+        return load_bc_agent(spec)
+
     # 其他情况：当作 Kaggle 内置 agent 名称字符串
     return spec
 

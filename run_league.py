@@ -32,14 +32,19 @@ from pathlib import Path
 # minimax_d3          20 局 — depth=3，随机 tiebreak，有区分度的对手。
 # minimax_d4          48 局 — depth=4，更强的对手，主要区分来源。
 # minimax_d5          10 局 — depth=5，最强的对手，主要区分来源。
+# bc_v1               10 局 — 行为克隆策略，从专家数据模仿训练。
 BENCHMARK_CONFIG = [
-    ("champion",     16),
+    ("champion",    30),
     ("random",       4),
     ("heuristic",    4),
-    ("minimax_d3",  20),
-    ("minimax_d4",  48),
+    ("minimax_d3",  30),
+    ("minimax_d4",  60),
     ("minimax_d5",  10),
+    ("bc_v1",       20),
 ]
+
+# 非内置对手的完整路径映射
+BC_AGENT_PATH = "runs/bc_v1/bc_policy_best.pt"
 
 
 LEAGUE_DIR = Path("league")
@@ -107,7 +112,12 @@ def benchmark_candidate(candidate_path):
     results = {}
 
     for opponent, num_games in BENCHMARK_CONFIG:
-        spec = str(CHAMPION_PATH) if opponent == "champion" else opponent
+        if opponent == "champion":
+            spec = str(CHAMPION_PATH)
+        elif opponent == "bc_v1":
+            spec = BC_AGENT_PATH
+        else:
+            spec = opponent
 
         print(f"\n--- benchmark: 候选 vs {opponent} ({num_games} 局) ---")
         cmd = [
