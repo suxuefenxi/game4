@@ -65,10 +65,10 @@ def make_league_selector(league_dir):
     specs = [
         ("random", _random_agent, 0.05),
         ("heuristic", heuristic_agent, 0.05),
-        ("minimax_d3_fast", _minimax_d3_fast, 0.15),
-        ("minimax_d4_fast", _minimax_d4_fast, 0.40),
-        ("minimax_d5_fast", _minimax_d5_fast, 0.10),
-        ("bc_v1", _bc_agent, 0.15),
+        ("minimax_d3_fast", _minimax_d3_fast, 0.40),
+        ("minimax_d4_fast", _minimax_d4_fast, 0.05),
+        ("minimax_d5_fast", _minimax_d5_fast, 0.05),
+        ("bc_v1", _bc_agent, 0.40),
     ]
 
     history_paths = find_league_models(league_dir, max_models=3)
