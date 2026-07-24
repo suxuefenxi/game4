@@ -65,10 +65,10 @@ def make_league_selector(league_dir):
     specs = [
         ("random", _random_agent, 0.05),
         ("heuristic", heuristic_agent, 0.05),
-        ("minimax_d3_fast", _minimax_d3_fast, 0.40),
-        ("minimax_d4_fast", _minimax_d4_fast, 0.05),
+        ("minimax_d3_fast", _minimax_d3_fast, 0.15),
+        ("minimax_d4_fast", _minimax_d4_fast, 0.60),
         ("minimax_d5_fast", _minimax_d5_fast, 0.05),
-        ("bc_v1", _bc_agent, 0.40),
+        ("bc_v1", _bc_agent, 0.10),
     ]
 
     history_paths = find_league_models(league_dir, max_models=3)
@@ -167,8 +167,8 @@ def main():
     # 覆盖加载模型的超参数
     model.batch_size = 512            # 增大 batch，稳定梯度
     model.n_epochs = 6                 # 增加 epoch，提高样本利用
-    model.lr_schedule = lambda frac: 3e-4 * frac   # 线性衰减：3e-4 → 0
-    model.learning_rate = 3e-4
+    model.lr_schedule = lambda frac: 1e-4 * frac   # 线性衰减：1e-4 → 0
+    model.learning_rate = 1e-4
 
     print("  模型加载完成（已覆盖超参数：batch_size=512, n_epochs=6, LR 线性衰减）")
 

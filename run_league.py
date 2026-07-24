@@ -37,10 +37,10 @@ BENCHMARK_CONFIG = [
     ("champion",    30),
     ("random",       4),
     ("heuristic",    4),
-    ("minimax_d3",  60),
-    ("minimax_d4",  4),
+    ("minimax_d3",  20),
+    ("minimax_d4",  60),
     ("minimax_d5",  4),
-    ("bc_v1",       60),
+    ("bc_v1",       20),
 ]
 
 # 非内置对手的完整路径映射
